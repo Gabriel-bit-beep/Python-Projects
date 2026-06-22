@@ -11,10 +11,10 @@ def clearContent():
         widgets.destroy()
 
 # this creates a random generated password based on the users length of password
-def createPassword(userLength):
+def createPassword():
     string = "123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()<>?:"
     password = ""
-    for i in range(userLength):
+    for i in range(16):
         password += random.choice(string)
     return password
 
@@ -43,6 +43,39 @@ def viewPasswords():
     for key, value in passwordManager.items():
         tk.Label(contentFrame, text=f'Saved: {key}: "{value}"').pack()
 
+
+def changePassword():
+    global passwordManager
+
+    if len(passwordManager) == 0:
+        tk.Label(contentFrame, text='You currently don\'t have anything saved at the moment').pack()
+        return
+
+    tk.Label(contentFrame, text='Select The website you would like to change the password to').pack()
+
+    combo = ttk.Combobox(contentFrame, values=list(passwordManager.keys()))
+    combo.pack(pady=5)
+
+    def select(event):
+        selected_item = combo.get()
+        tk.Label(contentFrame,text='What would you like your new password to be?').pack()
+        entry = tk.Entry(contentFrame)
+        entry.pack(pady=5)
+
+        def save():
+            newPassword = entry.get()
+            valid = checkPassword(selected_item,newPassword)
+
+            if valid == True:
+                tk.Label(contentFrame, text='Successfully saved new Password').pack()
+            else:
+                tk.Label(contentFrame, text='Invalid password, Must have a special char and must be > 8 and < 24').pack()
+
+        tk.Button(contentFrame, text='Save', command=save).pack(pady=5)
+    
+    combo.bind('<<ComboboxSelected>>', select)
+
+
 # this will build the ui for the password that the user chooses to create.
 def createPasswordUI():
     label = tk.Label(contentFrame, text='Password Must be at least 8 char, and must have a special char')
@@ -70,10 +103,6 @@ def createPasswordUI():
 
 # generates the labels and buttons
 def generatePasswordUI():
-    label = tk.Label(contentFrame, text='How long would you like your password to be?')
-    label.pack()
-    entry = tk.Entry(contentFrame)
-    entry.pack(pady=5)
     label2 = tk.Label(contentFrame, text='Where would you like to save this password to?')
     label2.pack()
     entry2 = tk.Entry(contentFrame)
@@ -84,7 +113,7 @@ def generatePasswordUI():
     # for the button to generate the generated password for the user
     def generate():
         try:
-            newPassword = createPassword(int(entry.get()))
+            newPassword = createPassword()
             updateManager(entry2.get(), newPassword)
             label3.config(text=f'Generated: \"{newPassword}\"')
         except ValueError:
@@ -105,6 +134,8 @@ def select(event):
         createPasswordUI()
     elif selected_item == 'View Passwords':
         viewPasswords()
+    elif selected_item == 'Change Password':
+        changePassword()
     elif selected_item == 'Quit':
         root.destroy()
 
@@ -112,14 +143,12 @@ def select(event):
 root = tk.Tk()
 root.geometry("500x500")
 
-intro = tk.Label(root, text='Welcome To Password Manager!\n')
-intro.pack()
-label = tk.Label(root, text='What would you like to do today?')
-label.pack()
+tk.Label(root, text='Welcome To Password Manager!\n').pack()
+tk.Label(root, text='What would you like to do today?').pack()
 
 combo_box = ttk.Combobox(
     root,
-    values=['Generate new Password', 'Create New Password', 'View Passwords', 'Quit']
+    values=['Generate new Password', 'Create New Password', 'View Passwords', 'Change Password', 'Quit']
 )
 combo_box.pack(pady=5)
 combo_box.bind('<<ComboboxSelected>>', select)
